@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="gzhu.edu.cn.exam.modules.system.mapper.UserMapper">
+    <resultMap id="baseResultMap" type="gzhu.edu.cn.exam.modules.system.entity.User">
+        <id column="id" property="id"/>
+        <result column="username" property="username"/>
+        <result column="password" property="password"/>
+        <result column="real_name" property="realName"/>
+        <result column="gender" property="gender"/>
+        <result column="email" property="email"/>
+        <result column="tel" property="tel"/>
+        <result column="weichat" property="weichat"/>
+        <result column="avatar" property="avatar"/>
+        <result column="teacher_no" property="teacherNo"/>
+        <collection property="roles" column="id" select="findRoleByUserId"/>
+    </resultMap>
+    <delete id="delUserById">
+        DELETE
+        FROM its_user
+        WHERE id = #{userId}
+    </delete>
+    <select id="findRoleByUserId" resultType="gzhu.edu.cn.exam.modules.system.entity.Role">
+        select r.id, r.name
+        from its_role r,
+             its_user_role ur
+        where r.id = ur.role_id
+          and ur.user_id = #{id}
+    </select>
+
+
+    <select id="selectBeiShiStudentList" resultType="gzhu.edu.cn.exam.modules.datamanage.dto.CollectDto">
+        SELECT u.`id`,
+        u.`username`,
+        u.`real_name`,
+        u.`major_id`,
+        u.`class_id`,
+        om.`name` AS major_name,
+        oc.`name` AS class_name
+        FROM its_user u
+        LEFT JOIN org_major om ON u.`major_id` = om.`id`
+        LEFT JOIN org_class oc ON u.`class_id` = oc.`id`
+        WHERE u.deleted = 0
+        <if test="content!=null and content!=''">
+            AND (u.`username` = #{content} or u.`real_name` =#{content})
+        </if>
+        <if test="map.schoolId != null and map.schoolId != ''">
+            AND u.`school_id` = #{map.schoolId}
+        </if>
+        <if test="map.collegeId != null and map.collegeId != ''">
+            AND u.`college_id` = #{map.collegeId}
+        </if>
+        <if test="map.majorId != null and map.majorId != ''">
+            AND u.`major_id` = #{map.majorId}
+        </if>
+        <if test="map.classId != null and map.classId != ''">
+            AND u.class_id = #{map.classId}
+        </if>
+    </select>
+
+    <select id="selectBeiShiStudentExportList" resultType="gzhu.edu.cn.exam.modules.datamanage.dto.CollectDto">
+        SELECT u.id,
+               u.username,
+               u.real_name,
+               u.major_id,
+               u.class_id,
+               om.`name` AS major_name,
+               oc.`name` AS class_name
+        FROM its_user u
+                 LEFT JOIN org_major om ON u.major_id = om.id
+                 LEFT JOIN org_class oc ON u.class_id = oc.id
+        WHERE u.deleted = 0
+    </select>
+
+    <select id="exportUserToExcel" resultType="gzhu.edu.cn.exam.modules.system.vo.UserExportToExcelVo">
+        SELECT iu.`username`,
+               iu.`real_name`,
+               iu.`gender`,
+               iu.`email`,
+               iu.`tel`,
+               iu.`weichat`,
+               iu.`teacher_no`,
+               iu.`birth`,
+               iu.`identity`,
+               iu.`age`
+        FROM its_user iu
+        WHERE iu.`deleted` = 0
+    </select>
+
+    <select id="getUpdateUserRoleList" resultType="java.lang.Integer">
+        SELECT `id`
+        FROM its_user
+        WHERE `id` IN
+        <foreach item="item" collection="userIds" separator="," open="(" close=")">
+            #{item}
+        </foreach>
+        AND `id` NOT IN (
+        SELECT iu.`id`
+        FROM its_user iu
+        LEFT JOIN its_user_role iur ON iu.`id` = iur.`user_id`
+        WHERE iu.`deleted` = 0
+        AND iu.`id` IN
+        <foreach item="item" collection="userIds" separator="," open="(" close=")">
+            #{item}
+        </foreach>
+        AND iur.`role_id` = #{roleId}
+        )
+    </select>
+</mapper>

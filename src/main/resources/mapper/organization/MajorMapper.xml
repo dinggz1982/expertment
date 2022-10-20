@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="gzhu.edu.cn.exam.modules.organization.mapper.MajorMapper">
+    <resultMap id="baseResultMap" type="gzhu.edu.cn.exam.modules.organization.entity.Major">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="description" property="description"/>
+        <result column="college_id" property="collegeId"/>
+        <result column="school_id" property="schoolId"/>
+        <association property="college" column="college_id" select="findCollegeById"/>
+        <association property="school" column="school_id" select="findSchoolById"/>
+    </resultMap>
+    <select id="findCollegeById" resultType="gzhu.edu.cn.exam.modules.organization.entity.College">
+        select c.* from org_college c where c.id = #{id}
+    </select>
+    <select id="findSchoolById" resultType="gzhu.edu.cn.exam.modules.organization.entity.School">
+        select s.* from org_school s where s.id = #{id}
+    </select>
+</mapper>

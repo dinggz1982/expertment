@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="gzhu.edu.cn.exam.modules.experiment.mapper.ExpApplyHourStatisticsMapper">
+
+    <update id="addHour">
+        UPDATE exp_apply_hour_statistics
+        SET `total_hour` = `total_hour` + #{num}
+        WHERE `user_id` = #{userId}
+          AND `apply_type_id` = #{typeId}
+          AND `deleted` = 0
+          AND `is_base` = "0"
+    </update>
+
+
+    <update id="updateByUserIdAndTypeId">
+        UPDATE exp_apply_hour_statistics
+        SET total_hour = (
+            SELECT IFNULL(SUM(real_hour), 0)
+            FROM exp_signup es
+                     LEFT JOIN exp_apply ea ON es.`apply_id` = ea.`id`
+            WHERE es.signup_user_id = #{userId}
+              AND es.`status` = #{status}
+              AND ea.type_id = #{typeId}
+        )
+        WHERE user_id = #{userId}
+          AND apply_type_id = #{typeId}
+    </update>
+
+    <update id="updateUserBaseHour">
+        UPDATE exp_apply_hour_statistics
+        SET `total_hour` = #{hour}
+        WHERE `user_id` = #{userId}
+          AND `is_base` = "1"
+          AND `apply_type_id` = #{typeId}
+    </update>
+
+    <update id="updateUserNotBaseHour">
+
+    </update>
+
+
+    <update id="updateUserHourByUserIdAndTypeId">
+        UPDATE exp_apply_hour_statistics
+        SET total_hour = (SELECT IFNULL(SUM(real_hour), 0)
+                          FROM exp_signup es
+                                   LEFT JOIN exp_apply ea ON es.apply_id = ea.id
+                          WHERE es.signup_user_id = #{userId}
+                            AND ea.type_id = #{typeId}
+                            AND es.`status` = #{status}
+                            AND es.confirm_type = #{confirmType})
+        WHERE user_id = #{userId}
+          AND apply_type_id = #{typeId}
+          AND is_base = 0
+    </update>
+
+    <select id="getNotExistExpTypeId" resultType="java.lang.Integer">
+        SELECT id
+        FROM exp_type
+        WHERE id not IN (
+        SELECT apply_type_id
+        FROM exp_apply_hour_statistics
+        WHERE user_id = #{userId}
+        <if test="isBase!=null">
+            AND `is_base` = #{isBase}
+        </if>
+        )
+        AND `deleted` = 0
+    </select>
+    <select id="getApplyTypeIdList" resultType="java.lang.Integer">
+        SELECT id
+        FROM exp_type
+        WHERE deleted = 0
+    </select>
+    <select id="getHourGroupByType" resultType="gzhu.edu.cn.exam.modules.experiment.vo.RealHourGroupByTypeVo">
+        SELECT et.id              AS type_id,
+               SUM(hs.total_hour) AS real_hour,
+               et.`name`
+        FROM exp_apply_hour_statistics hs
+                 LEFT JOIN exp_type et ON hs.`apply_type_id` = et.`id`
+        WHERE hs.`user_id` = #{userId}
+          AND et.`deleted` = 0
+          AND hs.`deleted` = 0
+        GROUP BY hs.`apply_type_id`
+    </select>
+    <select id="getUserBaseApplyHourStatistics"
+            resultType="gzhu.edu.cn.exam.modules.experiment.entity.ExpApplyHourStatistics">
+        SELECT et.`id`                    AS apply_type_id,
+               IFNULL(hs.`total_hour`, 0) AS total_hour,
+               hs.`id`                    AS id
+        FROM exp_type et
+                 LEFT JOIN (SELECT *
+                            FROM exp_apply_hour_statistics
+                            WHERE `user_id` = #{userId}
+                              AND `is_base` = '1'
+                              AND `deleted` = 0) hs ON et.`id` = hs.`apply_type_id`
+        WHERE et.`deleted` = 0
+    </select>
+    <select id="getAllHourTypeId" resultType="java.lang.Integer">
+        SELECT `id`
+        FROM exp_type
+        WHERE `deleted` = 0
+    </select>
+</mapper>

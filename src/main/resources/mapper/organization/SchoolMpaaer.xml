@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="gzhu.edu.cn.exam.modules.organization.mapper.SchoolMapper">
+
+    <select id="getExistSchoolId" resultType="java.lang.Integer">
+        SELECT id
+        FROM org_school
+        WHERE `deleted` = 0
+    </select>
+    <resultMap id="getSchoolTreeResultMap" type="gzhu.edu.cn.exam.modules.organization.dto.OrganizationDto">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <collection property="children" column="id" select="getCollegeById"/>
+    </resultMap>
+
+    <resultMap id="getCollegeByIdResultMap"
+               type="gzhu.edu.cn.exam.modules.organization.dto.OrganizationDto">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <collection property="children" column="id" select="getMajorById"/>
+    </resultMap>
+
+    <resultMap id="getMajorByIdResultMap" type="gzhu.edu.cn.exam.modules.organization.dto.OrganizationDto">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <collection property="children" column="id" select="getClassById"/>
+    </resultMap>
+
+    <resultMap id="getClassByIdResultMap" type="gzhu.edu.cn.exam.modules.organization.dto.OrganizationDto">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+    </resultMap>
+
+    <select id="getClassById" resultMap="getClassByIdResultMap">
+        SELECT *
+        FROM org_class
+        WHERE `major_id` = #{id}
+          AND `deleted` = 0
+    </select>
+
+    <select id="getMajorById" resultMap="getMajorByIdResultMap">
+        SELECT *
+        FROM org_major
+        WHERE `college_id` = #{id}
+          AND `deleted` = 0
+    </select>
+
+    <select id="getCollegeById" resultMap="getCollegeByIdResultMap">
+        SELECT *
+        FROM org_college
+        WHERE `school_id` = #{id}
+          AND `deleted` = 0
+    </select>
+
+    <select id="getSchoolTree" resultMap="getSchoolTreeResultMap">
+        SELECT *
+        FROM org_school
+        WHERE `deleted` = 0
+    </select>
+
+    <select id="getClassAllInfoByName" resultType="gzhu.edu.cn.exam.modules.organization.dto.ClassAllInfoDto">
+        SELECT os.`id`  AS schoolId,
+               oc.`id`  AS collegeId,
+               om.`id`  AS majorId,
+               ocl.`id` AS classId
+        FROM org_school os
+                 LEFT JOIN org_college oc ON os.`id` = oc.`school_id`
+                 LEFT JOIN org_major om ON om.`college_id` = oc.`id`
+                 LEFT JOIN org_class ocl ON ocl.`major_id` = om.`id`
+        WHERE (
+                os.`deleted` = 0
+                AND oc.`deleted` = 0
+                AND om.`deleted` = 0
+                AND ocl.`deleted` = 0
+            )
+          AND os.`name` = #{schoolName}
+          AND oc.`name` = #{collegeName}
+          AND om.`name` = #{majorName}
+          AND ocl.`name` = #{className}
+        LIMIT 1
+    </select>
+</mapper>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="gzhu.edu.cn.exam.modules.course.mapper.BaseQuestionInfoMapper">
+    <resultMap id="baseResultMap" type="gzhu.edu.cn.exam.modules.course.entity.BaseQuestionInfo">
+        <id column="id" property="id"/>
+        <result column="title" property="title"/>
+        <result column="type" property="type"/>
+        <result column="outline_id" property="outlineId"/>
+        <result column="knowledge_id" property="knowledgeId"/>
+        <association property="outline" column="outline_id" select="findOutlineById"/>
+        <association property="knowledge" column="knowledge_id" select="findKnowledgeById"/>
+    </resultMap>
+    <select id="findOutlineById" resultType="gzhu.edu.cn.exam.modules.course.entity.Outline">
+        select c.* from course_outline c where c.id = #{id}
+    </select>
+    <select id="findKnowledgeById" resultType="gzhu.edu.cn.exam.modules.knowledge.entity.Knowledge">
+        select k.id,k.name from knowledge_knowledge k where k.id = #{id}
+    </select>
+</mapper>

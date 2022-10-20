@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="gzhu.edu.cn.exam.modules.experiment.mapper.ApproveMapper">
+    <resultMap id="baseResultMap" type="gzhu.edu.cn.exam.modules.experiment.entity.Approve">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="apply_id" property="applyId"/>
+        <result column="type" property="type"/>
+        <result column="approve_user_id" property="approveUserId"/>
+        <result column="approve" property="approve"/>
+        <result column="create_time" property="createTime"/>
+        <result column="audit" property="audit"/>
+        <association property="apply" column="apply_id" select="findApplyById"/>
+        <association property="applyUser" column="apply_user_id" select="findUserById"/>
+
+    </resultMap>
+    <select id="findApplyById" resultType="gzhu.edu.cn.exam.modules.experiment.entity.Apply">
+        select a.id, a.name
+        from exp_apply a
+        where a.id = #{id}
+    </select>
+    <select id="findUserById" resultType="gzhu.edu.cn.exam.modules.system.entity.User">
+        select u.id, u.username, u.real_name
+        from its_user u
+        where u.id = #{id}
+    </select>
+    <select id="findTeacherById" resultType="gzhu.edu.cn.exam.modules.system.entity.User">
+        select u.id, u.username, u.real_name
+        from its_user u
+        where u.id = #{id}
+    </select>
+</mapper>

@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="gzhu.edu.cn.exam.modules.experiment.mapper.ApplyMapper">
+    <resultMap id="baseResultMap" type="gzhu.edu.cn.exam.modules.experiment.entity.Apply">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="description" property="description"/>
+        <result column="type_id" property="typeId"/>
+        <result column="lab_id" property="labId"/>
+        <result column="hours" property="hours"/>
+        <result column="number" property="number"/>
+        <result column="finish_number" property="finishNumber"/>
+        <result column="apply_number" property="applyNumber"/>
+        <result column="remains" property="remains"/>
+        <result column="start_date" property="startDate"/>
+        <result column="end_date" property="endDate"/>
+        <result column="apply_time" property="applyTime"/>
+        <result column="description" property="description"/>
+        <result column="teacher_confirm_user_id" property="teacherConfirmUserId"/>
+        <result column="admin_confirm_user_id" property="adminConfirmUserId"/>
+        <result column="apply_user_id" property="applyUserId"/>
+        <result column="finished" property="finished"/>
+        <association property="lab" column="lab_id" select="findLabById"/>
+        <association property="type" column="type_id" select="findTypeById"/>
+        <association property="teacherConfirmUser" column="teacher_confirm_user_id" select="findTeacherById"/>
+        <association property="adminConfirmUser" column="admin_confirm_user_id" select="findTeacherById"/>
+        <association property="applyUser" column="apply_user_id" select="findTeacherById"/>
+    </resultMap>
+    <select id="findLabById" resultType="gzhu.edu.cn.exam.modules.experiment.entity.Lab">
+        select l.*
+        from exp_lab l
+        where l.id = #{id}
+    </select>
+    <select id="findTypeById" resultType="gzhu.edu.cn.exam.modules.experiment.entity.ExpType">
+        select t.*
+        from exp_type t
+        where t.id = #{id}
+    </select>
+    <select id="findTeacherById" resultType="gzhu.edu.cn.exam.modules.system.entity.User">
+        select u.id, u.username, u.real_name, u.email, u.tel, u.weichat
+        from its_user u
+        where u.id = #{id}
+    </select>
+
+    <select id="getExportToExcelData" resultType="gzhu.edu.cn.exam.modules.datamanage.dto.ItemDataExportDto">
+        SELECT es.`status`,
+        es.real_hour,
+        lr.start_time,
+        ea.NAME as apply_name,
+        ea.hours,
+        et.name as type_name,
+        u.real_name AS teacher_name,
+        u2.real_name AS student_name,
+        u2.username AS student_username,
+        om.`name` AS major_name,
+        oc.`name` AS class_name
+        FROM exp_signup es
+        LEFT JOIN exp_apply ea ON es.apply_id = ea.id
+        LEFT JOIN exp_type et ON ea.type_id = et.id
+        LEFT JOIN exp_lab_record lr ON es.lab_record_id = lr.id
+        LEFT JOIN its_user u on ea.apply_user_id = u.id
+        LEFT JOIN its_user u2 ON es.signup_user_id = u2.id
+        LEFT JOIN org_major om ON u2.major_id = om.id
+        LEFT JOIN org_class oc ON u2.class_id = oc.id
+        WHERE es.`status` = #{status}
+        <if test="applyId != null">
+            AND es.apply_id = #{applyId}
+        </if>
+        <if test="expTypeId != null">
+            AND es.apply_id in (
+            SELECT id
+            FROM exp_apply
+            WHERE type_id = #{expTypeId})
+        </if>
+    </select>
+
+    <select id="listAdminApproveListBySearchContent"
+            resultType="gzhu.edu.cn.exam.modules.experiment.entity.Apply">
+        SELECT ea.* ,
+        u.real_name AS `applyUser.realName`
+        FROM exp_apply ea
+        LEFT JOIN its_user u ON ea.apply_user_id = u.id
+        <where>
+            <if test="type != null">
+                ea.type_id =#{type}
+            </if>
+            <if test="search != null">
+                AND ( u.real_name = #{search} OR ea.`name` = #{search})
+            </if>
+        </where>
+    </select>
+
+    <select id="getUserApproveApplyIdList" resultType="java.lang.Integer">
+        SELECT id
+        FROM exp_apply
+        WHERE apply_user_id = #{userId}
+          AND deleted = 0
+    </select>
+
+    <resultMap id="getUserApplyCollectPageDataMap" type="gzhu.edu.cn.exam.modules.experiment.vo.ApplySignUpCollectDto">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="hours" column="hours"/>
+        <result property="number" column="number"/>
+        <result property="applyNumber" column="apply_number"/>
+        <result property="finishNumber" column="finish_number"/>
+        <collection property="recordList" column="id" select="selectRecordList"/>
+    </resultMap>
+
+    <select id="selectRecordList" resultType="gzhu.edu.cn.exam.modules.experiment.vo.CollectRecordListDto">
+        SELECT lr.`id`                                       AS `id`,
+               el.`name`                                     AS `name`,
+               CONCAT(lr.`start_time`, ' - ', lr.`end_time`) AS `time`,
+               lr.`apply_id`                                 AS `applyId`,
+               lr.`num`                                      AS `num`,
+               lr.`already_num`                              AS `alreadyNum`,
+               lr.`finish_num`                               AS `finishNum`
+        FROM exp_lab_record lr
+                 LEFT JOIN exp_lab el ON el.`id` = lr.`lab_id`
+        WHERE lr.apply_id = #{id}
+    </select>
+
+    <select id="getUserApplyCollectPageData"
+            resultMap="getUserApplyCollectPageDataMap">
+        SELECT ea.`id`,
+        ea.`name`,
+        ea.`hours`,
+        ea.`number`,
+        ea.`apply_number`,
+        ea.`finish_number`
+        FROM exp_apply ea
+        WHERE ea.`status` = 3
+        <if test="userId != null">
+            AND ea.`apply_user_id` = #{userId}
+        </if>
+        AND ea.`deleted` = 0
+        ORDER BY ea.`id` DESC
+    </select>
+
+    <select id="getNewExperimentApply" resultType="gzhu.edu.cn.exam.modules.experiment.entity.Apply">
+        SELECT *
+        FROM exp_apply
+        WHERE `status` = #{status}
+#           AND `can_signup` = 1
+#           AND `is_lock` = 0
+          AND `deleted` = 0
+        ORDER BY `confirm_time` DESC,
+                 `id` DESC
+    </select>
+
+
+    <!--    <select id="getTeamInfo" resultType="java.lang.String">-->
+    <!--        SELECT DISTINCT (team)-->
+    <!--        FROM exp_apply-->
+    <!--        WHERE 1=1-->
+    <!--        <if test="userId!=null">-->
+    <!--            and teacher_confirm_user_id = #{userId}-->
+    <!--        </if>-->
+    <!--        AND deleted = 0-->
+    <!--    </select>-->
+</mapper>

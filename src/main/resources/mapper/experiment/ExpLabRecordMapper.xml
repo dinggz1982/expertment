@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="gzhu.edu.cn.exam.modules.experiment.mapper.ExpLabRecordMapper">
+
+    <update id="updateRecordAlreadyNum">
+        UPDATE exp_lab_record
+        set `already_num` = (SELECT count(1)
+                             FROM exp_signup
+                             WHERE `lab_record_id` = #{labRecordId}
+                               and `status` not in (4, 5)
+#                               10)
+#                              and `confirm_type` not in (2, 3)
+        ),
+            `finish_num`  = (
+                SELECT COUNT(1)
+                FROM exp_signup
+                WHERE `lab_record_id` = #{labRecordId}
+                  AND `confirm_type` = 1
+                  AND `status` = 7
+            )
+        WHERE `id` = #{labRecordId}
+    </update>
+    <select id="getUpdateCheckLab" resultType="gzhu.edu.cn.exam.modules.experiment.entity.ExpLabRecord">
+        SELECT *
+        FROM exp_lab_record
+        WHERE lab_id = #{labId}
+        AND is_pass = 1
+        AND deleted = 0
+        <if test="id != null">
+            AND id != #{id}
+        </if>
+        AND NOT
+        (
+        UNIX_TIMESTAMP(start_time) > UNIX_TIMESTAMP(#{end})
+        OR UNIX_TIMESTAMP(#{start}) > UNIX_TIMESTAMP(end_time)
+        )
+    </select>
+    <select id="updateCheckLab" resultType="java.lang.Integer">
+        SELECT COUNT(1)
+        FROM exp_lab_record
+        WHERE lab_id = #{labId}
+        AND is_pass = 1
+        AND deleted = 0
+        <if test="id != null">
+            AND id != #{id}
+        </if>
+        AND NOT
+        (
+        UNIX_TIMESTAMP(start_time) > UNIX_TIMESTAMP(#{end})
+        OR UNIX_TIMESTAMP(#{start}) > UNIX_TIMESTAMP(end_time)
+        )
+    </select>
+
+    <select id="checkLab" resultType="java.lang.Integer">
+        SELECT COUNT(1)
+        FROM exp_lab_record
+        WHERE lab_id = #{labId}
+          AND is_pass = 1
+          AND deleted = 0
+          AND NOT
+            (
+                    UNIX_TIMESTAMP(start_time) > UNIX_TIMESTAMP(#{end})
+                    OR UNIX_TIMESTAMP(#{start}) > UNIX_TIMESTAMP(end_time)
+                )
+    </select>
+    <select id="selectUserApplyLabList" resultType="gzhu.edu.cn.exam.modules.borrow.dto.LabBorrowListDto">
+        SELECT r.*,
+               l.`name`
+        FROM exp_lab_record r
+                 LEFT JOIN exp_lab l ON r.`lab_id` = l.`id`
+        WHERE r.`apply_id` = -1
+          AND r.`user_id` = #{userId}
+          AND r.`deleted` = 0
+        ORDER BY `id` DESC
+    </select>
+
+    <select id="getApproveList" resultType="gzhu.edu.cn.exam.modules.borrow.dto.LabBorrowListDto">
+        SELECT r.*,
+        l.`name`,
+        u.`real_name`
+        FROM exp_lab_record r
+        LEFT JOIN exp_lab l ON r.`lab_id` = l.`id`
+        LEFT JOIN its_user u ON r.user_id = u.id
+        WHERE r.`apply_id` = -1
+        <if test="teacherId != null">
+            AND r.`approve_teacher_id` = #{teacherId}
+        </if>
+        <if test="status!=null">
+            AND r.`status` = #{status}
+        </if>
+        AND r.`deleted` = 0
+        ORDER BY `id` DESC
+    </select>
+    <select id="getAvailableExpLabRecordList"
+            resultType="gzhu.edu.cn.exam.modules.experiment.entity.ExpLabRecord">
+        SELECT *
+        FROM exp_lab_record
+        WHERE `apply_id` = #{applyId}
+          AND `deleted` = 0
+          AND `start_time` > NOW()
+    </select>
+    <select id="getLabTakeUpList" resultType="gzhu.edu.cn.exam.modules.system.entity.User">
+        SELECT `username`,
+               `real_name`,
+               `email`,
+               `tel`,
+               `weichat`
+        FROM its_user
+        WHERE `id` IN (
+            SELECT `user_id`
+            FROM exp_lab_record
+            WHERE `lab_id` = #{labId}
+              AND `is_pass` = 1
+              AND `deleted` = 0
+              AND NOT (
+                    UNIX_TIMESTAMP(`start_time`) > UNIX_TIMESTAMP(#{end})
+                    OR UNIX_TIMESTAMP(#{start}) > UNIX_TIMESTAMP(`end_time`)
+                )
+        )
+    </select>
+
+</mapper>

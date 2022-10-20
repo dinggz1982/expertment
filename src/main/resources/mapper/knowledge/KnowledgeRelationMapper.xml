@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="gzhu.edu.cn.exam.modules.knowledge.mapper.KnowledgeRelationMapper">
+    <resultMap id="baseResultMap" type="gzhu.edu.cn.exam.modules.knowledge.entity.KnowledgeRelation">
+        <id column="id" property="id"/>
+        <result column="ko_a_id" property="koAId"/>
+        <result column="ko_b_id" property="koBId"/>
+        <result column="relation" property="relation"/>
+        <association property="koA" column="ko_a_id" select="findById"/>
+        <association property="koB" column="ko_b_id" select="findById"/>
+    </resultMap>
+    <select id="findById" resultType="gzhu.edu.cn.exam.modules.knowledge.entity.Knowledge">
+        select k.id,k.name from knowledge_knowledge k where k.id = #{id}
+    </select>
+</mapper>

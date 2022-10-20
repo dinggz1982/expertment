@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="gzhu.edu.cn.exam.modules.system.mapper.RoleMapper">
+    <resultMap id="baseResultMap" type="gzhu.edu.cn.exam.modules.system.entity.Role">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="description" property="description"/>
+        <collection property="menus" column="id" select="getMenuByRoleId"/>
+    </resultMap>
+    <select id="getMenuByRoleId" resultType="gzhu.edu.cn.exam.modules.system.entity.Menu">
+        select m.id,m.icon,m.url,m.parent_id,m.open,m.type,m.order_number from its_menu m,its_role_menu rm where m.id=rm.menu_id and rm.role_id = #{id}
+    </select>
+</mapper>

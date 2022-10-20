@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="gzhu.edu.cn.exam.modules.course.mapper.OutlineMapper">
+    <resultMap id="baseResultMap" type="gzhu.edu.cn.exam.modules.course.entity.Outline">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="textbook_id" property="textbookId"/>
+        <result column="parent_id" property="parentId"/>
+        <association property="textbook" column="textbook_id" select="findTextbookById"/>
+        <association property="parent" column="parent_id" select="findParnetOutlineById"/>
+    </resultMap>
+    <select id="findTextbookById" resultType="gzhu.edu.cn.exam.modules.course.entity.Textbook">
+        select c.* from course_textbook c where c.id = #{id}
+    </select>
+    <select id="findParnetOutlineById" resultType="gzhu.edu.cn.exam.modules.course.entity.Outline">
+        select o.id,o.name,o.textbook_id,o.parent_id from course_outline o where o.id = #{id}
+    </select>
+</mapper>

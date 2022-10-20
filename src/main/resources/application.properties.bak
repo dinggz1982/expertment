@@ -1,0 +1,48 @@
+#网站访问的端口
+server.port=8081
+##数据库访问配置
+#spring.datasource.url=jdbc:mysql://127.0.0.1/exam-test?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=GMT%2B8&allowPublicKeyRetrieval=true
+###数据库连接用户名
+#spring.datasource.username=root
+###数据库连接的密码
+#spring.datasource.password=root
+#数据库访问配置
+spring.datasource.host=120.25.211.72
+#spring.datasource.host=127.0.0.1
+spring.datasource.database=experiment_prop
+spring.datasource.url=jdbc:mysql://${spring.datasource.host}/${spring.datasource.database}?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=GMT%2B8&allowPublicKeyRetrieval=true
+#数据库连接用户名
+spring.datasource.username=root
+#数据库连接的密码
+spring.datasource.password=MyPass@123
+#备份配置
+spring.datasource.back.mail=bao.zhang@139.com
+#spring.datasource.back.mail=backexperiment@163.com
+spring.datasource.back.command=mysqldump -h${spring.datasource.host} -u${spring.datasource.username} -p${spring.datasource.password} ${spring.datasource.database}
+#数据库驱动
+spring.datasource.driverClassName=com.mysql.cj.jdbc.Driver
+spring.datasource.hikari.minimum-idle=3
+spring.datasource.hikari.maximum-pool-size=10
+##不能小于30秒，否则默认回到1800秒
+spring.datasource.hikari.max-lifetime=30000
+spring.datasource.hikari.connection-test-query=SELECT 1
+#配置jsp
+spring.mvc.view.prefix=/WEB-INF/views/
+spring.mvc.view.suffix=.jsp
+#mybatis plus日志
+mybatis-plus.configuration.log-impl=org.apache.ibatis.logging.stdout.StdOutImpl
+# 全局逻辑删除的实体字段名(since 3.3.0,配置后可以忽略不配置步骤2)
+mybatis-plus.global-config.db-config.logic-delete-field=deleted 
+# 逻辑已删除值(默认为 1)
+mybatis-plus.global-config.db-config.logic-delete-value=1
+# 逻辑未删除值(默认为 0)
+mybatis-plus.global-config.db-config.logic-not-delete-value=0
+#处理html文件中文乱码
+spring.http.encoding.force=true
+spring.http.encoding.charset=utf-8
+#用户上传的目录
+#Linux
+#file.uploadFolder = /var/uploads/
+#Windows
+file.uploadFolder=D:/eclipse-workspace/experiment/src/main/webapp/WEB-INF/views/uploads/
+file.staticAccessPath=/uploads/

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="gzhu.edu.cn.exam.modules.system.mapper.MenuMapper">
+    <resultMap id="baseResultMap" type="gzhu.edu.cn.exam.modules.system.entity.Menu">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="url" property="url"/>
+        <result column="icon" property="icon"/>
+        <result column="create_time" property="createTime"/>
+        <result column="order_number" property="orderNumber"/>
+        <result column="parent_id" property="parentId"/>
+        <result column="type" property="type"/>
+        <result column="open" property="open"/>
+    </resultMap>
+
+    <select id="getParentMenuByRoleIds" resultType="gzhu.edu.cn.exam.modules.system.entity.Menu" parameterType="string">
+        SELECT distinct(m.`id`),
+                       m.`url`,
+                       m.`name`,
+                       m.`icon`,
+                       m.`type`,
+                       m.`open`,
+                       m.`order_number`,
+                       m.`parent_id`
+        from its_menu m,
+             its_role_menu rm
+        where rm.`role_id` in (${roleIds})
+          and rm.`menu_id` = m.`id`
+          and m.`parent_id` = 0
+          and m.`type` = 0
+          and m.`deleted` = 0
+        order by m.order_number asc
+    </select>
+
+    <select id="getChildMenuByRoleIdsAndParentId" resultType="gzhu.edu.cn.exam.modules.system.entity.Menu">
+        select distinct(m.`id`),
+                       m.`url`,
+                       m.`name`,
+                       m.`icon`,
+                       m.`type`,
+                       m.`open`,
+                       m.`order_number`,
+                       m.`parent_id`
+        from its_menu m,
+             its_role_menu rm
+        where rm.`role_id` in (${roleIds})
+          and rm.`menu_id` = m.`id`
+          and m.`parent_id` = #{pId}
+          and m.`type` = 0
+          and m.`deleted` = 0
+        order by m.`order_number` asc
+    </select>
+</mapper>

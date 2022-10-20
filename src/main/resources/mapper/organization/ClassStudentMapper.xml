@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="gzhu.edu.cn.exam.modules.organization.mapper.ClassStudentMapper">
+    <resultMap id="baseResultMap" type="gzhu.edu.cn.exam.modules.organization.entity.ClassStudent">
+        <id column="id" property="id"/>
+        <result column="class_id" property="classId"/>
+        <result column="student_id" property="studentId"/>
+        <association property="classInfo" column="class_id" select="findClassById"/>
+        <association property="student" column="student_id" select="findUserById"/>
+    </resultMap>
+    <select id="findClassById" resultType="gzhu.edu.cn.exam.modules.organization.entity.ClassInfo">
+        select c.* from org_class c where c.id = #{id}
+    </select>
+    <select id="findUserById" resultType="gzhu.edu.cn.exam.modules.system.entity.User">
+        select u.id,u.username,u.real_name from its_user u where u.id = #{id}
+    </select>
+
+</mapper>

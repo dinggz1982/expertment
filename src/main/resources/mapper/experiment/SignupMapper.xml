@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="gzhu.edu.cn.exam.modules.experiment.mapper.SignupMapper">
+    <resultMap id="baseResultMap" type="gzhu.edu.cn.exam.modules.experiment.entity.Signup">
+        <id column="id" property="id"/>
+        <result column="status" property="status"/>
+        <result column="apply_id" property="applyId"/>
+        <result column="signup_user_id" property="signupUserId"/>
+        <result column="create_time" property="createTime"/>
+        <association property="apply" column="apply_id" select="findApplyById"/>
+        <association property="signupUser" column="signup_user_id" select="findUserById"/>
+    </resultMap>
+
+
+    <update id="initRealHourAndConfirmTypeById">
+        UPDATE exp_signup
+        SET `real_hour` = NULL
+            AND `confirm_type` = NULL
+        WHERE `id` = #{signUpId}
+    </update>
+
+    <select id="findApplyById" resultType="gzhu.edu.cn.exam.modules.experiment.entity.Apply">
+        select *
+        from exp_apply a
+        where a.id = #{id}
+    </select>
+
+    <select id="findUserById" resultType="gzhu.edu.cn.exam.modules.system.entity.User">
+        select u.id,
+               u.username,
+               u.real_name,
+               u.school_id,
+               u.college_id,
+               u.major_id,
+               u.class_id,
+               u.identity,
+               u.weichat,
+               u.tel,
+               u.email,
+               u.birth,
+               u.gender,
+               u.age
+        from its_user u
+        where u.id = #{id}
+    </select>
+
+    <select id="getHourGroupByType" resultType="gzhu.edu.cn.exam.modules.experiment.vo.RealHourGroupByTypeVo">
+        SELECT ifnull(sum(real_hour), 0) AS real_hour,
+               id                        AS type_id,
+               et.`name`
+        FROM (
+                 SELECT es.real_hour,
+                        ea.type_id
+                 FROM exp_signup es
+                          LEFT JOIN exp_apply ea ON es.`apply_id` = ea.`id`
+                     AND ea.deleted = 0
+                 WHERE es.`signup_user_id` = #{userId}
+                   AND es.`status` = #{status}
+             ) m
+                 RIGHT JOIN exp_type et ON m.`type_id` = et.`id`
+        WHERE et.`deleted` = 0
+        GROUP BY id
+    </select>
+    <resultMap id="selectUserCanSignUpResultMap" type="gzhu.edu.cn.exam.modules.experiment.entity.Signup">
+        <result property="applyId" column="id"/>
+        <result property="availableNum" column="availableNum"/>
+        <result property="status" column="status"/>
+        <!--        <association property="apply" javaType="gzhu.edu.cn.exam.modules.experiment.entity.Apply">-->
+        <!--            <id property="id" column="id"/>-->
+        <!--            <result property="name" column="name"/>-->
+        <!--            <result property="hours" column="hours"/>-->
+        <!--            <result property="labId" column="lab_id"/>-->
+        <!--            <result property="typeId" column="type_id"/>-->
+        <!--            <result property="number" column="number"/>-->
+        <!--            <result property="description" column="description"/>-->
+        <!--            <result property="status" column="status"/>-->
+        <!--            <result property="teacherConfirmUserId" column="teacher_confirm_user_id"/>-->
+        <!--            <result property="applyUserId" column="apply_user_id"/>-->
+        <!--        </association>-->
+    </resultMap>
+
+    <select id="selectUserCanSignUp" resultMap="selectUserCanSignUpResultMap">
+        SELECT
+        ea.`id`,
+        es.`status`,
+        COUNT(er.`apply_id`) AS availableNum
+        FROM exp_apply ea
+        LEFT JOIN exp_signup es ON ( es.`apply_id` = ea.`id` AND es.`signup_user_id` = #{id} )
+        LEFT JOIN exp_lab_record er ON er.`apply_id` = ea.`id`
+        WHERE ea.`status` = 3
+        AND ea.`is_lock` = '0'
+        AND ea.`deleted` = 0 AND er.deleted = 0
+        # AND ( ea.`number` - ea.`apply_number` > 0 )
+        # AND ( er.`num` - er.`already_num` > 0 )
+        AND ( es.`id` IS NULL OR es.`status` = 4 )
+        AND er.`is_pass` = 1
+        # AND er.`start_time` > NOW()
+        # AND ( er.`num` - er.`already_num` > 0 )
+        <if test="type != null and type != ''">
+            AND ea.`type_id` =#{type}
+        </if>
+        <if test="name != null and name != ''">
+            AND ea.`name` LIKE CONCAT('%',#{name},'%')
+        </if>
+        <if test="startTime != null">
+            AND er.`start_time` = #{startTime}
+        </if>
+        <if test="endTime != null">
+            AND er.`end_time` = #{endTime}
+        </if>
+        GROUP BY er.`apply_id`,es.`status` ORDER BY ea.`id` DESC
+    </select>
+    <select id="selectItemDataByOtherInfo" parameterType="map"
+            resultType="gzhu.edu.cn.exam.modules.experiment.entity.Signup">
+        SELECT es.*,
+        ea.`name` AS `apply.name`,
+        ea.`type_id` AS `apply.typeId`,
+        ea.`hours` AS `apply.hours`,
+        ea.`id` AS `apply.id`,
+        u1.`real_name` AS `signupUser.realName`,
+        u1.`username` AS `signupUser.username`,
+        u1.`school_id` AS `signupUser.schoolId`,
+        u1.`major_id` AS `signupUser.majorId`,
+        u1.`college_id` AS `signupUser.collegeId`,
+        u1.`class_id` AS `signupUser.classId`,
+        u2.`real_name` AS `apply.applyUser.realName`
+        FROM exp_signup es
+        LEFT JOIN its_user u1 ON es.`signup_user_id` = u1.`id`
+        LEFT JOIN exp_apply ea ON es.`apply_id` = ea.`id`
+        LEFT JOIN its_user u2 ON ea.`apply_user_id` = u2.`id`
+        <where>
+            es.`status` = 7
+            <if test="search != null and search !=''">
+                AND ( u2.`real_name` = #{search} OR u1.`real_name` = #{search} OR u1.`username` = #{search}
+                OR ea.`name` = #{search})
+            </if>
+            <if test="map.schoolId != null and map.schoolId != ''">
+                AND u1.`school_id` = #{map.schoolId}
+            </if>
+            <if test="map.collegeId != null and map.collegeId != ''">
+                AND u1.`college_id` = #{map.collegeId}
+            </if>
+            <if test="map.majorId != null and map.majorId != ''">
+                AND u1.`major_id` = #{map.majorId}
+            </if>
+            <if test="map.classId != null and map.classId != ''">
+                AND u1.class_id = #{map.classId}
+            </if>
+            <if test="applyId != -1">
+                AND es.`apply_id` =#{applyId}
+            </if>
+            <if test="expTypeId != -1">
+                AND es.`apply_id` in (SELECT id FROM exp_apply WHERE `type_id` = #{expTypeId})
+            </if>
+        </where>
+    </select>
+
+    <select id="getTeacherApproveStudentSignUpPage"
+            resultMap="baseResultMap">
+        SELECT es.*
+        FROM exp_signup es
+        LEFT JOIN its_user iu ON es.`signup_user_id` = iu.`id`
+        LEFT JOIN exp_lab_record lr ON lr.`id` = es.`lab_record_id`
+        WHERE iu.`id` IS NOT NULL
+        <if test="applyId!=null and applyId!=-1">
+            AND es.`apply_id` =#{applyId}
+        </if>
+        <if test="applyId==-1">
+            AND es.`apply_id` IN ( SELECT id FROM exp_apply WHERE `apply_user_id` = #{id} AND `status` = #{type} AND
+            `deleted`= 0 )
+        </if>
+        <if test="filterStatus != null and filterStatus.length() > 0">
+            AND es.`status` IN (${filterStatus})
+        </if>
+        ORDER BY
+        <if test="prop !=null and prop != '' and prop=='labTime'">
+            lr.`start_time` ${order} ,
+        </if>
+        <if test="prop !=null and prop != '' and prop=='createTime'">
+            es.`create_time` ${order} ,
+        </if>
+        es.`id` DESC
+    </select>
+    <select id="getAdminApplyResultSignUpPage" resultMap="baseResultMap">
+        SELECT es.*
+        FROM exp_signup es
+        LEFT JOIN its_user iu ON es.`signup_user_id` = iu.`id`
+        WHERE iu.`id` IS NOT NULL
+        <if test="applyId!=-1">
+            AND es.`apply_id`=#{applyId}
+        </if>
+        <if test="status!=-1">
+            AND es.`status`=#{status}
+        </if>
+        ORDER BY es.`id` DESC
+    </select>
+</mapper>

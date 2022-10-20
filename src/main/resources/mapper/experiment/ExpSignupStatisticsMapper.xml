@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="gzhu.edu.cn.exam.modules.experiment.mapper.ExpSignupStatisticsMapper">
+
+    <update id="updateUpToStandradByUserId">
+        UPDATE exp_signup_statistics
+        SET up_to_standrad = (SELECT count(1)
+                              FROM exp_signup
+                              WHERE signup_user_id = #{userId}
+                                AND `status` in (6, 7)
+                                AND confirm_type = #{type})
+        WHERE user_id = #{userId}
+    </update>
+
+    <update id="updateBelowGradeByUserId">
+        UPDATE exp_signup_statistics
+        SET below_grade = (SELECT count(1)
+                           FROM exp_signup
+                           WHERE signup_user_id = #{userId}
+                             AND `status` = 10
+                             AND confirm_type = #{type})
+        WHERE user_id = #{userId}
+    </update>
+
+    <update id="updateTotalScoreByUser">
+        UPDATE exp_signup_statistics
+        SET total_score =(SELECT sum(real_hour)
+                          FROM exp_signup
+                          WHERE signup_user_id = #{userId}
+                            AND confirm_type = #{type}
+                            AND status = #{status})
+        WHERE user_id = #{userId}
+    </update>
+
+
+</mapper>

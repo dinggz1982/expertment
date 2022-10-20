@@ -1,0 +1,121 @@
+{
+  "id": "",
+  "name": "",
+  "font_family": "iconfont",
+  "css_prefix_text": "icon-",
+  "description": "",
+  "glyphs": [
+    {
+      "icon_id": "1314403",
+      "name": "温度",
+      "font_class": "wendu",
+      "unicode": "e66c",
+      "unicode_decimal": 58988
+    },
+    {
+      "icon_id": "1319371",
+      "name": "温度",
+      "font_class": "wendu1",
+      "unicode": "e689",
+      "unicode_decimal": 59017
+    },
+    {
+      "icon_id": "1527857",
+      "name": "温度计",
+      "font_class": "wenduji",
+      "unicode": "e621",
+      "unicode_decimal": 58913
+    },
+    {
+      "icon_id": "1541952",
+      "name": "湿度",
+      "font_class": "shidu",
+      "unicode": "e609",
+      "unicode_decimal": 58889
+    },
+    {
+      "icon_id": "5831737",
+      "name": "温度",
+      "font_class": "wendu2",
+      "unicode": "e694",
+      "unicode_decimal": 59028
+    },
+    {
+      "icon_id": "7335483",
+      "name": "土壤湿度",
+      "font_class": "turangshidu",
+      "unicode": "eb24",
+      "unicode_decimal": 60196
+    },
+    {
+      "icon_id": "7658863",
+      "name": "PH",
+      "font_class": "PH",
+      "unicode": "e65c",
+      "unicode_decimal": 58972
+    },
+    {
+      "icon_id": "8223420",
+      "name": "温度计",
+      "font_class": "wenduji1",
+      "unicode": "e634",
+      "unicode_decimal": 58932
+    },
+    {
+      "icon_id": "11758209",
+      "name": "温湿度",
+      "font_class": "wenshidu",
+      "unicode": "e620",
+      "unicode_decimal": 58912
+    },
+    {
+      "icon_id": "11761410",
+      "name": "湿度",
+      "font_class": "shidu1",
+      "unicode": "e71b",
+      "unicode_decimal": 59163
+    },
+    {
+      "icon_id": "12912061",
+      "name": "pH值",
+      "font_class": "pHzhi",
+      "unicode": "e61a",
+      "unicode_decimal": 58906
+    },
+    {
+      "icon_id": "15301774",
+      "name": "土壤磷含量",
+      "font_class": "turanglinhanliang",
+      "unicode": "eb69",
+      "unicode_decimal": 60265
+    },
+    {
+      "icon_id": "15301775",
+      "name": "土壤钾含量",
+      "font_class": "turangjiahanliang",
+      "unicode": "eb6a",
+      "unicode_decimal": 60266
+    },
+    {
+      "icon_id": "15301776",
+      "name": "土壤氮含量",
+      "font_class": "turangdanhanliang",
+      "unicode": "eb6b",
+      "unicode_decimal": 60267
+    },
+    {
+      "icon_id": "16620600",
+      "name": "肥料",
+      "font_class": "feiliao",
+      "unicode": "eb70",
+      "unicode_decimal": 60272
+    },
+    {
+      "icon_id": "18397947",
+      "name": "湿度",
+      "font_class": "humidity-01",
+      "unicode": "e6f2",
+      "unicode_decimal": 59122
+    }
+  ]
+}

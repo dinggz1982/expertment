@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="gzhu.edu.cn.exam.modules.course.mapper.TestPaperMapper">
+    <resultMap id="baseResultMap" type="gzhu.edu.cn.exam.modules.course.entity.TestPaper">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="create_time" property="createTime"/>
+        <result column="create_user_id" property="createUserId"/>
+        <association property="createUser" column="create_user_id" select="findUserById"/>
+        <collection property="singleChoices" column="id" select="findSingleChoiceByUserId"/>
+    </resultMap>
+
+    <select id="findUserById" resultType="gzhu.edu.cn.exam.modules.system.entity.User">
+        select * from its_user where id=#{id}
+    </select>
+
+    <select id="findSingleChoiceByUserId" resultType="gzhu.edu.cn.exam.modules.course.entity.SingleChoice">
+        select s.* from course_single_choice s where s.id in(select tq.question_id from course_test_paper_question tq where tq.test_paper_id =#{id})
+    </select>
+</mapper>
