@@ -207,6 +207,10 @@ public class ApplyController {
                     //保存自定义实验室
                     lab.setName(apply.getCustomize());
                     lab.setIsCustomize(1);
+                    java.text.DateFormat format1 = new java.text.SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+
+                    String create_date = format1.format(new Date());
+                    lab.setCreateDate(create_date);
                     labService.save(lab);
                     apply.setLabId(lab.getId());
                 } else {
